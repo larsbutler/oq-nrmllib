@@ -403,3 +403,46 @@ class SESXMLWriter(object):
             corner_elem.set('lon', str(corner[0]))
             corner_elem.set('lat', str(corner[1]))
             corner_elem.set('depths', str(corner[2]))
+
+
+class LossCurveXMLWriter(object):
+    pass
+    gml_tag = '{%s}' % nrml.GML_NAMESPACE
+
+    def __init__(self, path):
+        self.path = path
+
+    def serialize(self, data):
+
+        with open(self.path, 'w') as fh:
+            root = etree.Element('nrml', nsmap=nrml.SERIALIZE_NS_MAP)
+
+            risk_res_elem = etree.SubElement(root, 'riskResult')
+            risk_res_elem.set('%sid' % self.gml_tag, 'rr1')
+
+            lr_curve_list_elem = etree.SubElement(risk_res_elem, 'lossRatioCurveList')
+            lr_curve_list_elem.set('%sid' % self.gml_tag, 'loss_ratio_curve_list1')
+
+            for i, loss_curve in enumerate(data):
+
+                asset_elem = etree.SubElement(lr_curve_list_elem, 'asset')
+                asset_elem.set('%sid' % self.gml_tag, 'asset_%s' % i)
+
+                site_elem = etree.SubElement(asset_elem, 'site')
+
+                point_elem = etree.SubElement(site_elem, '%sPoint' % self.gml_tag)
+                pos_elem = etree.SubElement(point_elem, '%spos' % self.gml_tag)
+                pos_elem.text = '%s %s' % (loss_curve.location.x, loss_curve.location.y)
+
+                lr_curves_elem = etree.SubElement(asset_elem, 'lossRatioCurves')
+                lr_curve_elem = etree.SubElement(lr_curves_elem, 'lossRatioCurve')
+
+                loss_ratio_elem = etree.SubElement(lr_curve_elem, 'lossRatio')
+                loss_ratio_elem.text = ' '.join([str(x) for x in loss_curve.losses])
+
+                poe_elem = etree.SubElement(lr_curve_elem, 'poE')
+                poe_elem.text = ' '.join([str(x) for x in loss_curve.poes])
+
+            fh.write(etree.tostring(
+                root, pretty_print=True, xml_declaration=True,
+                encoding='UTF-8'))
