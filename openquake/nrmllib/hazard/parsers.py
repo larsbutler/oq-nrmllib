@@ -600,7 +600,7 @@ class GMFScenarioParser(object):
             yield imt, '{%s}' % ','.join(gmvs), location
 
 
-class HazardCurveParser(object):
+class HazardCurveXMLParser(object):
     _CURVES_TAG = '{%s}hazardCurves' % openquake.nrmllib.NAMESPACE
     _CURVE_TAG = '{%s}hazardCurve' % openquake.nrmllib.NAMESPACE
 
@@ -639,3 +639,9 @@ class HazardCurveParser(object):
                 location = models.Location(x, y)
                 poes_array = map(float, poes.text.split())
                 yield models.HazardCurveData(location, poes_array)
+
+
+def HazardCurveParser(*args, **kwargs):
+    # TODO: display deprecation warning
+    # TODO: use directly HazardCurveXMLParser
+    return HazardCurveXMLParser(*args, **kwargs)
